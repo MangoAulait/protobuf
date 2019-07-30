@@ -5,6 +5,8 @@ type PyClassNode struct {
 	FieldDef    string
 	ReflectDef  string
 	ValidateDef string
+	SetterDef   string
+	GetterDef   string
 }
 
 const PyClassTpl = `
@@ -66,5 +68,8 @@ class {{.ClassName}}(object):
                 return False
 
         return True
+    
+{{.SetterDef}}
+{{.GetterDef}}
 
 `

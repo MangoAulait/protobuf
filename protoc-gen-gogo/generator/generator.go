@@ -3265,6 +3265,8 @@ func (g *Generator) generateMessageStruct(mc *msgCtx, topLevelFields []topLevelF
 		msgReflectBuf := bytes.NewBuffer(make([]byte, 0, 1024))
 		msgValidateBuf := bytes.NewBuffer(make([]byte, 0, 1024))
 		msgDefBuf := bytes.NewBuffer(make([]byte, 0, 1024))
+		setterDefBuf := bytes.NewBuffer(make([]byte, 0, 1024))
+		getterDefBuf := bytes.NewBuffer(make([]byte, 0, 1024))
 		for idx, field := range mc.message.Field {
 			if field.GetType() == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
 				var fieldType string
@@ -3282,6 +3284,8 @@ func (g *Generator) generateMessageStruct(mc *msgCtx, topLevelFields []topLevelF
 				msgValidateBuf.WriteString(fmt.Sprintf("    \"%s\": True,\n", field.GetName()))
 			}
 			msgDefBuf.WriteString(fmt.Sprintf("    %s = None\n", field.GetName()))
+			setterDefBuf.WriteString(fmt.Sprintf("    def set_%s(v=None):\n        self.%s = v\n        return self\n\n", field.GetName(), field.GetName()))
+			getterDefBuf.WriteString(fmt.Sprintf("    def get_%s(v=None):\n        return self.%s\n\n", field.GetName(), field.GetName()))
 		}
 		blockBuf := bytes.NewBuffer(make([]byte, 0, 4096))
 		err := template.Must(template.New("pyfmqjson_tpl").
@@ -3292,6 +3296,8 @@ func (g *Generator) generateMessageStruct(mc *msgCtx, topLevelFields []topLevelF
 					FieldDef:       msgDefBuf.String(),
 					ReflectDef:     msgReflectBuf.String(),
 					ValidateDef:    msgValidateBuf.String(),
+					SetterDef:      setterDefBuf.String(),
+					GetterDef:      getterDefBuf.String(),
 				},
 		)
 		if err != nil {
