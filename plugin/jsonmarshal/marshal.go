@@ -87,6 +87,9 @@ func (p *JsonMarshal) Generate(file *generator.FileDescriptor) {
 	p.atleastOne = false
 	p.localName = generator.FileName(file)
 	for _, message := range file.Messages() {
+		if message.DescriptorProto.GetOptions().GetMapEntry() {
+			continue
+		}
 		p.atleastOne = true
 		ccTypeName := generator.CamelCaseSlice(message.TypeName())
 		

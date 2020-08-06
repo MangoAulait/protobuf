@@ -56,6 +56,7 @@ package validate
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/buptbill220/protobuf/protoc-gen-gogo/generator"
 	"github.com/buptbill220/protobuf/protoc-gen-gogo/descriptor"
@@ -82,6 +83,7 @@ func (p *JsonMarshal) Init(g *generator.Generator) {
 }
 
 func (p *JsonMarshal) Generate(file *generator.FileDescriptor) {
+	
 	p.PluginImports = generator.NewPluginImports(p.Generator)
 	fmtPkg := p.PluginImports.NewImport("fmt").Use()
 	p.atleastOne = false
@@ -89,6 +91,9 @@ func (p *JsonMarshal) Generate(file *generator.FileDescriptor) {
 	
 	
 	for _, message := range file.Messages() {
+		if message.DescriptorProto.GetOptions().GetMapEntry() {
+			continue
+		}
 		p.atleastOne = true
 		ccTypeName := generator.CamelCaseSlice(message.TypeName())
 		p.P(`func (m *`, ccTypeName, `) Validate() (error) {`)
@@ -100,8 +105,9 @@ func (p *JsonMarshal) Generate(file *generator.FileDescriptor) {
 		p.P(`}`)
 		for _, f := range message.GetField() {
 			goName := CamelCase(f.GetName())
-			if f.GetLabel() == descriptor.FieldDescriptorProto_LABEL_REPEATED {
-				if f.GetType() == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
+			if f.GetLabel() == descriptor.FieldDescriptorProto_LABEL_REPEATED && f.GetType() == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
+				tps := strings.Split(f.GetTypeName(), ".")
+				if len(tps) < 2 || strings.LastIndex(tps[len(tps)-1], "Entry") != len(tps[len(tps)-1]) - 5 {
 					p.P(`for _, p := range m.` + goName + ` {`)
 					p.In()
 					

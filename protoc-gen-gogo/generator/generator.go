@@ -1514,9 +1514,7 @@ except:
 	// do, which is tricky when there's a plugin, just import it and
 	// reference it later. The same argument applies to the fmt and math packages.
 	g.P("import (")
-	if !IsFmqJson {
-		g.PrintImport(GoPackageName(g.Pkg["fmt"]), "fmt")
-		g.PrintImport(GoPackageName(g.Pkg["math"]), "math")
+	if g.file.proto3 {
 		if gogoproto.ImportsGoGoProto(g.file.FileDescriptorProto) {
 			g.PrintImport(GoPackageName(g.Pkg["proto"]), GoImportPath(g.ImportPrefix) + GoImportPath("github.com/gogo/protobuf/proto"))
 			if gogoproto.RegistersGolangProto(g.file.FileDescriptorProto) {
@@ -1525,6 +1523,11 @@ except:
 		} else {
 			g.PrintImport(GoPackageName(g.Pkg["proto"]), GoImportPath(g.ImportPrefix) + GoImportPath("github.com/golang/protobuf/proto"))
 		}
+	}
+	if !IsFmqJson {
+		g.PrintImport(GoPackageName(g.Pkg["fmt"]), "fmt")
+		g.PrintImport(GoPackageName(g.Pkg["math"]), "math")
+		
 	}
 	for importPath, packageName := range imports {
 		g.P(packageName, " ", GoImportPath(g.ImportPrefix)+importPath)
@@ -1542,7 +1545,7 @@ except:
 	}
 	g.P(")")
 
-	if !IsFmqJson && !IsPyFmq {
+	if IsFmqJson && !IsPyFmq {
 		g.P("// Reference imports to suppress errors if they are not otherwise used.")
 		g.P("var _ = ", g.Pkg["proto"], ".Marshal")
 		if gogoproto.ImportsGoGoProto(g.file.FileDescriptorProto) && gogoproto.RegistersGolangProto(g.file.FileDescriptorProto) {
@@ -1557,6 +1560,9 @@ except:
 			}
 		}
 		g.P()
+	}
+	if IsFmqJson && g.file.proto3 {
+		g.P("var _ = ", g.Pkg["proto"], ".Marshal")
 	}
 }
 
