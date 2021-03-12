@@ -90,6 +90,7 @@ extend google.protobuf.FileOptions {
 	optional bool jsonmarshal_all = 63036;
 	optional bool validate_all = 63037;
 	optional bool pyjsonmarshal_all = 63038;
+	optional bool omitempty_all = 63039;
 }
 
 extend google.protobuf.MessageOptions {

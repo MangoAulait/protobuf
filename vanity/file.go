@@ -84,6 +84,16 @@ func SetBoolFileOption(extension *proto.ExtensionDesc, value bool) func(file *de
 	}
 }
 
+func GetBoolFileOption(extension *proto.ExtensionDesc, value bool) func(file *descriptor.FileDescriptorProto) bool {
+	return func(file *descriptor.FileDescriptorProto) bool  {
+		if FileHasBoolExtension(file, extension) {
+			value, _ := proto.GetExtension(file.Options, extension)
+			return *(value.(*bool))
+		}
+		return false
+	}
+}
+
 func TurnOffGoGettersAll(file *descriptor.FileDescriptorProto) {
 	SetBoolFileOption(gogoproto.E_GoprotoGettersAll, false)(file)
 }
@@ -218,4 +228,16 @@ func TurnOnPyJsonMarshalAll(file *descriptor.FileDescriptorProto) {
 
 func TurnOffPyJsonMarshalAll(file *descriptor.FileDescriptorProto) {
 	SetBoolFileOption(gogoproto.E_PyjsonmarshalAll, false)(file)
+}
+
+func TurnOnOmitemptyAll(file *descriptor.FileDescriptorProto) {
+	SetBoolFileOption(gogoproto.E_OmitemptyAll, true)(file)
+}
+
+func TurnOffOmitemptyAll(file *descriptor.FileDescriptorProto) {
+	SetBoolFileOption(gogoproto.E_OmitemptyAll, false)(file)
+}
+
+func GetOmitemptyAll(file *descriptor.FileDescriptorProto) bool {
+	return GetBoolFileOption(gogoproto.E_OmitemptyAll, true)(file)
 }

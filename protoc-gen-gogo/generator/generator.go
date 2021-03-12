@@ -72,6 +72,7 @@ import (
 )
 
 var IsFmqJson = false
+var OmitemptyAll = true
 var IsPyFmq = false
 var FmqJsonExtra = false
 
@@ -3532,7 +3533,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 
 		typename, wiretype := g.GoType(message, field)
 		jsonName := *field.Name
-		jsonTag := jsonName + ",omitempty"
+		jsonTag := jsonName
 		repeatedNativeType := (!field.IsMessage() && !gogoproto.IsCustomType(field) && field.IsRepeated())
 		if !gogoproto.IsNullable(field) && !repeatedNativeType {
 			jsonTag = jsonName
@@ -3540,6 +3541,12 @@ func (g *Generator) generateMessage(message *Descriptor) {
 		gogoJsonTag := gogoproto.GetJsonTag(field)
 		if gogoJsonTag != nil {
 			jsonTag = *gogoJsonTag
+		}
+		if field.GetJsonName() != "" && field.GetJsonName() != jsonName {
+			jsonTag = field.GetJsonName()
+		}
+		if OmitemptyAll {
+			jsonTag += ",omitempty"
 		}
 		gogoMoreTags := gogoproto.GetMoreTags(field)
 		moreTags := ""

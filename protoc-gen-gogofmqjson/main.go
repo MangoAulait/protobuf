@@ -32,6 +32,7 @@ import (
 	"github.com/buptbill220/protobuf/vanity"
 	"github.com/buptbill220/protobuf/vanity/command"
 	"github.com/buptbill220/protobuf/protoc-gen-gogo/generator"
+	"github.com/buptbill220/protobuf/gogoproto"
 )
 
 func main() {
@@ -42,6 +43,12 @@ func main() {
 	
 	vanity.ForEachFile(files, vanity.TurnOnJsonMarshalAll)
 	vanity.ForEachFile(files, vanity.TurnOnValidateAll)
+	vanity.ForEachFile(files, vanity.TurnOnOmitemptyAll)
+	for _, file := range files {
+		if vanity.FileHasBoolExtension(file, gogoproto.E_OmitemptyAll) {
+			generator.OmitemptyAll = vanity.GetOmitemptyAll(file)
+		}
+	}
 
 	resp := command.Generate(req)
 	command.Write(resp)
