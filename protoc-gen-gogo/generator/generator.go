@@ -486,6 +486,8 @@ type Generator struct {
 
 	customImports  []string
 	writtenImports map[string]bool // For de-duplicating written imports
+
+	hasEnum        bool            // Used for fmq json enum
 }
 
 type pathType int
@@ -1515,7 +1517,7 @@ except:
 	// do, which is tricky when there's a plugin, just import it and
 	// reference it later. The same argument applies to the fmt and math packages.
 	g.P("import (")
-	if g.file.proto3 {
+	if g.file.proto3 || (IsFmqJson && g.hasEnum) {
 		if gogoproto.ImportsGoGoProto(g.file.FileDescriptorProto) {
 			g.PrintImport(GoPackageName(g.Pkg["proto"]), GoImportPath(g.ImportPrefix) + GoImportPath("github.com/gogo/protobuf/proto"))
 			if gogoproto.RegistersGolangProto(g.file.FileDescriptorProto) {
@@ -1680,6 +1682,7 @@ func (g *Generator) generateEnum(enum *EnumDescriptor) {
 	}
 
 	if gogoproto.IsGoEnumStringer(g.file.FileDescriptorProto, enum.EnumDescriptorProto) {
+		g.hasEnum = true
 		g.P("func (x ", ccTypeName, ") String() string {")
 		g.In()
 		g.P("return ", g.Pkg["proto"], ".EnumName(", ccTypeName, "_name, int32(x))")
@@ -3542,9 +3545,10 @@ func (g *Generator) generateMessage(message *Descriptor) {
 		if gogoJsonTag != nil {
 			jsonTag = *gogoJsonTag
 		}
-		if field.GetJsonName() != "" && field.GetJsonName() != jsonName {
-			jsonTag = field.GetJsonName()
-		}
+		/* why field descriptor has JsonName */
+		//if field.GetJsonName() != "" && field.GetJsonName() != jsonName {
+		//	jsonTag = field.GetJsonName()
+		//}
 		if OmitemptyAll {
 			jsonTag += ",omitempty"
 		}
